@@ -21,12 +21,41 @@ insta.login(u,p)
 import os 
 import re 
 import glob
+from pathlib import Path        
 #Come with globe setting 
+'''
 img_path= "./astro.clo.vn/*_1.jpg" 
 img_paths = [f for f in glob.glob(img_path)]
 cap_path= "./astro.clo.vn/*.txt" 
 cap_paths = [f for f in glob.glob(cap_path)]
-
+'''
+def get_path(): 
+    cap_path= "./astro.clo.vn/*.txt" 
+    #cap_paths = [f for f in glob.glob(cap_path)]
+    cap_paths = []
+    img_path= "./astro.clo.vn/*_1.jpg" 
+    img_paths = []
+    none = []
+    #Sort the time only add in array if time match  
+    for f in glob.glob(img_path):
+        c = Path(f).stem[:-2]
+        for  i in glob.glob(cap_path): 
+            p = Path(i).stem 
+            if c ==p :
+                img_paths.append(f)
+                cap_paths.append(i)
+            else : 
+                print("not found cap linked to: ",i)
+                continue 
+    ''' 
+    i = Path(cap_paths[index]).stem
+    if i ==c : img_paths.append(f)
+    '''
+    return cap_paths, img_paths , none 
+path = get_path()
+print(len(path[0]))
+print(len(path[1]))
+print(len(path[2]))
 #%% 
 '''
 This function is useed to open every text file and search for the product name  
@@ -39,35 +68,12 @@ def product_name_search(file_paths:str):
         if first_line !="": 
             product_name = first_line
     return product_name                     
-for i in cap_paths : 
+for i in  path[0]: 
     name = product_name_search(i)
     product_names.append(name.strip("\n").strip("\n").strip("/"))
 print(product_names)
-#%%
-'''
-    Matching caption with timestamp
-    Loop through each file_name
-'''
-from pathlib import Path        
 
-cap_time = set() 
-img_time =set() 
-for i in cap_paths : 
-    path = Path(i).stem
-    cap_time.add(path)
 
-for j in img_paths : 
-    path2 = Path(j).stem[:-2]
-    img_time.add(path)
-#The date in cap_time where 
-print(img_time[0])
-print(cap_time[0])
-none = set() 
-for i in img_time: 
-    if i in cap_time: 
-        none.add(i)
-print(len(none))
-print(none)
 #%%
 '''
 Merge everything in a panda dataframe 
@@ -75,9 +81,8 @@ Merge everything in a panda dataframe
 import pandas as pd 
 cap_series= pd.Series(product_names,name="Product")
 print(cap_series)
-img_series= pd.Series(img_paths,name="Img")
+img_series= pd.Series(path[1],name="Img")
 print(img_series)
-assert cap_series.shape == img_series.shape 
 img_df = pd.merge(cap_series,img_series,how="outer",right_index=True,left_index=True)
 img_df = img_df.sample(frac=1).reset_index(drop=True)
 img_df.tail(20)
