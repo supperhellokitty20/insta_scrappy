@@ -3,32 +3,41 @@
     taking the first picture in each post upload them to html templete and an google sheet file  
 
 '''
-
-#%%
-#Grab all the info pic and store them in metadat.json
-u = "astro.clo.vn"
-p = "tuanyeungan4"
-from instaloader import Instaloader 
-import instaloader 
-insta = Instaloader()
-insta.login(u,p)
-#%%
-! instaloader --l astro.clo.vn -p tuanyeungan4 astro.clo.vn --filename-pattern={date_utc} 
-#%%
-'''
-    Filter post and captions
-'''
+#%% 
+import pandas as pd 
 import os 
-import re 
+import sys 
 import glob
 from pathlib import Path        
-#Come with globe setting 
+from IPython.core.display import display,HTML
+#%% 
 '''
-img_path= "./astro.clo.vn/*_1.jpg" 
-img_paths = [f for f in glob.glob(img_path)]
-cap_path= "./astro.clo.vn/*.txt" 
-cap_paths = [f for f in glob.glob(cap_path)]
+    Setting variables and stuff 
 '''
+username = "" 
+pw = "" 
+target = "" 
+
+os.environ["username"] = "astro.clo.vn" 
+os.environ["pw"] ="tuanyeungan4"  
+os.environ["target"] = "astro.clo.vn" 
+#%%
+'''
+    Run this shell if first time runner 
+'''
+# Use instaloader to download all picture 
+! instaloader --l $username  -p $pw --filename-pattern={date_utc} 
+#%%
+'''
+    To update the existed directory 
+'''
+! instaloader --fast-update --l $username  -p $pw $target --filename-pattern={date_utc} 
+#%%
+'''
+    Filter post and captions to prevent somepost doesn't have caption
+    Only post with caption is valid  
+'''
+
 def get_path(): 
     cap_path= "./astro.clo.vn/*.txt" 
     #cap_paths = [f for f in glob.glob(cap_path)]
@@ -45,20 +54,16 @@ def get_path():
                 img_paths.append(f)
                 cap_paths.append(i)
             else : 
-                print("not found cap linked to: ",i)
                 continue 
-    ''' 
-    i = Path(cap_paths[index]).stem
-    if i ==c : img_paths.append(f)
-    '''
-    return cap_paths, img_paths , none 
+    return cap_paths, img_paths  
 path = get_path()
 print(len(path[0]))
 print(len(path[1]))
-print(len(path[2]))
+
 #%% 
 '''
-This function is useed to open every text file and search for the product name  
+This function is useed to open every text file and search for the product name 
+on the first line of txt file  
 '''
 product_names = [] 
 def product_name_search(file_paths:str): 
@@ -78,7 +83,6 @@ print(product_names)
 '''
 Merge everything in a panda dataframe 
 '''
-import pandas as pd 
 cap_series= pd.Series(product_names,name="Product")
 print(cap_series)
 img_series= pd.Series(path[1],name="Img")
@@ -87,9 +91,9 @@ img_df = pd.merge(cap_series,img_series,how="outer",right_index=True,left_index=
 img_df = img_df.sample(frac=1).reset_index(drop=True)
 img_df.tail(20)
 # %%
-#Display data to html file 
-# convert your links to html tags 
-from IPython.core.display import display,HTML
+'''
+    Converting the dataframe to html
+'''
 def path_to_image_html(path):
     return '<img src="'+ path + '" width="60" >'
 
@@ -103,4 +107,5 @@ for image_col in image_cols:
     format_dict[image_col] = path_to_image_html
 display(HTML(img_df.to_html(escape=False ,formatters=format_dict)))
 # %%
-img_df.to_html('index.html', escape=False, formatters=format_dict)
+img_df.to_html('./index.html', escape=False, formatters=format_dict)
+# %%
