@@ -15,12 +15,14 @@ Since this was done during boring days , so i wont be updating them ... too lazy
 ## Run Locally
 - To run this script use **vscode**  ==> I was using vscode built in ipython kernal for a script file 
 this allow me to have a ipython session in .py file 
-(Notice if your version doesn't have built ipython , update it ) :))) 
+(Notice if your version doesn't have built ipython , update it ) :) 
 
 - Install dependencies 
-<code> 
-    pip3 insall requirement.txt
-</code> 
+
+    <code> 
+        pip3 insall requirement.txt
+    </code> 
+
 - Go to the script.py file  
 - Add your username , password and target in script.py  
 - run the script  
