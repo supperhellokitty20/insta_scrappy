@@ -1,7 +1,6 @@
 '''
     This script  will take all insta picture downloaded  , 
     taking the first picture in each post upload them to html templete and an google sheet file  
-
 '''
 #%% 
 import pandas as pd 
@@ -9,24 +8,76 @@ import os
 import sys 
 import glob
 from pathlib import Path        
-from IPython.core.display import display,HTML
+import shlex
+import subprocess
+from download import download
 #%% 
 '''
     Setting variables and stuff 
 '''
-username = "" 
-pw = "" 
-target = "" 
-
-os.environ["username"] = "astro.clo.vn" 
-os.environ["pw"] ="tuanyeungan4"  
-os.environ["target"] = "astro.clo.vn" 
+username = "astro.clo.vn"
+pw = "tuanyeungan04"
+target = "astro.clo.vn"
+'''
+username = "-l astro.clo.vn"
+pw = "-p tuanyeungan04"
+target = "astro.clo.vn"
+'''
+'''
+os.environ.copy()
+os.environ["username"] = username 
+os.environ["pw"] = pw   
+os.environ["target"] =  target
+'''
 #%%
 '''
     Run this shell if first time runner 
+    TODO : Develope this feature instead of using ipython , 
+    this allow the script to run on a server 
 '''
+#cmd = f"instaloader --l %s -p %s %s --filename-pattern=%s" %(username,pw,target,"{date_utc}")
+cmd = f"instaloader %s %s %s --filename-pattern=%s" %(username,pw,target,"{date_utc}")
+cmd = ["instaloader"]
+cmd.append(username)
+cmd.append(pw)
+cmd.append(target)
+cmd.append("--filename-pattern={date_utc}")
+print(cmd) 
+#%%
+#This will allow to check for continous status off the cmd 
+process = subprocess.Popen(cmd, 
+                           stdout=subprocess.PIPE,
+                           universal_newlines=True)
+
+while True:
+    output = process.stdout.readline()
+    print(output.strip())
+    # Do something else
+    return_code = process.poll()
+    if return_code is not None:
+        print('RETURN CODE', return_code)
+        # Process has finished, read rest of the output 
+        for output in process.stdout.readlines():
+            print(output.strip())
+        break
+'''
+while True:
+    output = process.stdout.readline()
+    print(output.strip())
+    # Do something else
+    return_code = process.poll()
+    if return_code is not None:
+        print('RETURN CODE', return_code)
+        # Process has finished, read rest of the output 
+        for output in process.stdout.readlines():
+            print(output.strip())
+        break 
+'''
+#%%
+download(username)
+#%%
 # Use instaloader to download all picture 
-! instaloader --l $username  -p $pw --filename-pattern={date_utc} 
+! instaloader --l $username  -p $pw $target --filename-pattern={date_utc} 
 #%%
 '''
     To update the existed directory 
@@ -73,6 +124,7 @@ def product_name_search(file_paths:str):
         if first_line !="": 
             product_name = first_line
     return product_name                     
+#Loop through every caption text file and find the product name on the first line of text 
 for i in  path[0]: 
     name = product_name_search(i)
     product_names.append(name.strip("\n").strip("\n").strip("/"))
@@ -105,7 +157,9 @@ image_cols = ['Img' ]  #<- define which columns will be used to convert to html
 format_dict = {}
 for image_col in image_cols:
     format_dict[image_col] = path_to_image_html
-display(HTML(img_df.to_html(escape=False ,formatters=format_dict)))
 # %%
+#Save the file to html 
 img_df.to_html('./index.html', escape=False, formatters=format_dict)
-# %%
+
+
+
