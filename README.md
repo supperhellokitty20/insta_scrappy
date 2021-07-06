@@ -25,10 +25,7 @@ this allow me to have a ipython session in .py file
 
 - Go to the script.py file  
 - Add your username , password and target in script.py  
-- run the script  
-    ```
-        python3 script.py
-    ```
+- run the script within vscode built in ipython while wit comment **#%%** specify a ipyhon cell  
 - the result will be an index.html file 
 - Modify the script.py for more export options 
     
